@@ -24,7 +24,9 @@ var DB = nosql.load('/simpleauthapi.nosql');
 var app = express();
 const session = require('express-session');
 
+// Set up the JSON and session middlewares
 app.use(express.json());
+app.use(session({secret: 'secret'}));
 
 var users = [];
 
@@ -95,7 +97,6 @@ app.post('/sign-in', function (request, response) {
 
       securityToken = jwt.sign(JSON.stringify(verifiedUser), "secret");
 
-      app.use(session({secret: 'secret'}));
       request.session.jwt = securityToken;
 
       response.send({
