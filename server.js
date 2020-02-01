@@ -35,17 +35,17 @@ app.get('/me', function (request, response) {
 });
 
 app.post('/sign-up', function (request, response) {
+  var newUser = {
+    'username': request.body.username,
+    'email': request.body.email
+  };
 
   // Store the username, password and email in the db
   if(users.findIndex((user) => user.username === newUser.username) === -1) {
     hash = encrypt.createHash('sha256');
     hash.update(request.body.password);
 
-    var newUser = {
-      'username': request.body.username,
-      'email': request.body.email,
-      'password' : hash.digest('hex')
-    };
+    newUser.password = hash.digest('hex');
 
     // No username exists that matches the given username, so add a new user
     users.push(newUser);
