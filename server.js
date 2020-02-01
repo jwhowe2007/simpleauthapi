@@ -35,6 +35,9 @@ app.get('/', function (request, response) {
 app.get('/me', function (request, response) {
   console.log("Display user information");
 
+  // Check for an Authorization header
+  console.log("request body: ", request.body);
+
   response.send("Name: Joe Schmoe");
 });
 
