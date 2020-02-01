@@ -11,6 +11,9 @@ try {
   exit();
 }
 
+// Base64 URL codec library
+const base64url = require('base64url');
+
 // NoSQL db setup
 var nosql = require('nosql');
 var DB = nosql.load('/simpleauthapi.nosql');
@@ -71,9 +74,30 @@ app.post('/sign-in', function (request, response) {
 
   if(userIndex !== -1) {
     // User exists, check to see if the login password matches the user record
+    const verifiedUser = users[userIndex];
 
-    if(users[userIndex].password === hash.digest('hex')) {
-      response.send('User was successfully signed in!');
+    if(verifiedUser.password === hash.digest('hex')) {
+      // Generate web token
+      var securityToken;
+
+      const tokenHeader = {
+        "alg": "HS256",
+        "typ": "JWT"
+      };
+
+      const hmac = encrypt.createHmac('sha256', 'secret');
+
+      hmac.update(
+        base64url.encode(JSON.stringify(tokenHeader)) + "." + base64url.encode(JSON.stringify(verifiedUser))
+      );
+
+      securityToken = hmac.digest('hex');
+
+      response.send({
+        'message': 'User was successfully signed in!',
+        'user': verifiedUser,
+        'securityToken': securityToken
+      });
     } else {
       response.send('Password is incorrect. Please recheck your login credentials and try again.');
     }
