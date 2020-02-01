@@ -37,10 +37,20 @@ app.get('/', function (request, response) {
 app.get('/me', function (request, response) {
   console.log("Display user information");
 
-  // Check for an Authorization header
-  console.log("request body: ", request.body);
+  // Attach authorization header with bearer token
+  response.append('Authorization', 'Bearer: ' + request.session.jwt);
 
-  response.send("Name: Joe Schmoe");
+  const verifyUserJWT = jwt.verify(request.session.jwt, "secret");
+
+  if(verifyUserJWT) {
+
+    response.send({
+      'message': 'Successfully verified user token!',
+      'req.user': jwt.decode(request.session.jwt)
+    });
+  } else {
+      response.send("Name: Joe Schmoe");
+  }
 });
 
 app.post('/sign-up', function (request, response) {
