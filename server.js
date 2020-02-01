@@ -17,10 +17,6 @@ jwt = require('jsonwebtoken');
 // Base64 URL codec library
 const base64url = require('base64url');
 
-// NoSQL db setup
-var nosql = require('nosql');
-var DB = nosql.load('/simpleauthapi.nosql');
-
 var app = express();
 const session = require('express-session');
 
@@ -49,7 +45,7 @@ app.get('/me', function (request, response) {
       'req.user': jwt.decode(request.session.jwt)
     });
   } else {
-      response.send("Name: Joe Schmoe");
+      response.send("User authentication token could not be verified. Please sign in again.");
   }
 });
 
