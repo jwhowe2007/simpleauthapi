@@ -11,6 +11,9 @@ try {
   exit();
 }
 
+// JWT token generator
+jwt = require('jsonwebtoken');
+
 // Base64 URL codec library
 const base64url = require('base64url');
 
@@ -19,6 +22,7 @@ var nosql = require('nosql');
 var DB = nosql.load('/simpleauthapi.nosql');
 
 var app = express();
+const session = require('express-session');
 
 app.use(express.json());
 
@@ -72,26 +76,24 @@ app.post('/sign-in', function (request, response) {
 
   const userIndex = users.findIndex((user) => user.email === auth.email);
 
+  // Web security token that represents the currently logged in and authed user
+  var securityToken;
+
   if(userIndex !== -1) {
     // User exists, check to see if the login password matches the user record
     const verifiedUser = users[userIndex];
 
     if(verifiedUser.password === hash.digest('hex')) {
-      // Generate web token
-      var securityToken;
 
       const tokenHeader = {
         "alg": "HS256",
         "typ": "JWT"
       };
 
-      const hmac = encrypt.createHmac('sha256', 'secret');
+      securityToken = jwt.sign(JSON.stringify(verifiedUser), "secret");
 
-      hmac.update(
-        base64url.encode(JSON.stringify(tokenHeader)) + "." + base64url.encode(JSON.stringify(verifiedUser))
-      );
-
-      securityToken = hmac.digest('hex');
+      app.use(session({secret: 'secret'}));
+      request.session.jwt = securityToken;
 
       response.send({
         'message': 'User was successfully signed in!',
