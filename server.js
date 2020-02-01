@@ -6,11 +6,11 @@ let encrypt;
 
 try {
   encrypt = require('crypto');
+  hash = encrypt.createHash('sha256');
 } catch (cryptoError) {
   console.log('WARNING: CRYPTO SUPPORT IS NOT AVAILABLE!');
+  exit();
 }
-
-// Note: basic password hashing done using the AES-256-CBC-HMAC-SHA256 algo.
 
 // NoSQL db setup
 var nosql = require('nosql');
@@ -35,25 +35,21 @@ app.get('/me', function (request, response) {
 app.post('/sign-up', function (request, response) {
   console.log("Sign up a user");
 
-  console.log("username signed up: ", request.body.username);
-
-  var newUser = {
-    'username': request.body.username,
-    'email': request.body.email,
-    'password' : request.body.password
-  };
-
   // Store the username, password and email in the db
-  if(users.findIndex((user) => {
-    user.username === newUser.username
-  }) === -1) {
-      // No username exists that matches the given username, so add a new user
-      users = users.push(newUser);
+  if(users.findIndex((user) => user.username === newUser.username) === -1) {
+    hash.update(request.body.password);
+
+    var newUser = {
+      'username': request.body.username,
+      'email': request.body.email,
+      'password' : hash.digest('hex')
+    };
+
+    // No username exists that matches the given username, so add a new user
+    users = users.push(newUser);
   } else {
     response.send('User already exists - no operation was performed');
   }
-
-  // users.push(newUser);
 
   response.send({
       'message': 'User signed up!',
