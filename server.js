@@ -6,7 +6,6 @@ let encrypt;
 
 try {
   encrypt = require('crypto');
-  hash = encrypt.createHash('sha256');
 } catch (cryptoError) {
   console.log('WARNING: CRYPTO SUPPORT IS NOT AVAILABLE!');
   exit();
@@ -33,10 +32,10 @@ app.get('/me', function (request, response) {
 });
 
 app.post('/sign-up', function (request, response) {
-  console.log("Sign up a user");
 
   // Store the username, password and email in the db
   if(users.findIndex((user) => user.username === newUser.username) === -1) {
+    hash = encrypt.createHash('sha256');
     hash.update(request.body.password);
 
     var newUser = {
@@ -46,7 +45,7 @@ app.post('/sign-up', function (request, response) {
     };
 
     // No username exists that matches the given username, so add a new user
-    users = users.push(newUser);
+    users.push(newUser);
   } else {
     response.send('User already exists - no operation was performed');
   }
@@ -60,9 +59,27 @@ app.post('/sign-up', function (request, response) {
 });
 
 app.post('/sign-in', function (request, response) {
-  console.log("User signed in");
+  var auth = {
+    'email': request.body.email,
+    'password': request.body.password
+  };
 
-  response.send('User was successfully signed in!');
+  hash = encrypt.createHash('sha256');
+  hash.update(auth.password);
+
+  const userIndex = users.findIndex((user) => user.email === auth.email);
+
+  if(userIndex !== -1) {
+    // User exists, check to see if the login password matches the user record
+
+    if(users[userIndex].password === hash.digest('hex')) {
+      response.send('User was successfully signed in!');
+    } else {
+      response.send('Password is incorrect. Please recheck your login credentials and try again.');
+    }
+  } else {
+    response.send('ERROR: User not found.');
+  }
 });
 
 var server = app.listen(8081, function () {
