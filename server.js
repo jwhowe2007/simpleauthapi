@@ -23,10 +23,6 @@ app.use(session({secret: 'secret'}));
 
 var users = [];
 
-app.get('/', function (request, response) {
-  response.send('Hello World!');
-});
-
 // Set up the /me route middleware to authenticate a user via bearer token
 app.use('/me', function (request, response, next) {
 
@@ -50,13 +46,6 @@ app.use('/me', function (request, response, next) {
 
   next();
 });
-
-// response.append('Authorization', 'Bearer: ' + request.session.jwt);
-// app.get('/me', function (request, response) {
-  // console.log("Display user information");
-
-
-//});
 
 app.post('/sign-up', function (request, response) {
   var newUser = {
@@ -131,5 +120,5 @@ var server = app.listen(8081, function () {
   var host = server.address().address;
   var port = server.address().port;
 
-  console.log("Example app listening at http://%s:%s", host, port);
+  console.log("Simple Auth API server listening at http://%s:%s", host, port);
 });
