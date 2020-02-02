@@ -14,9 +14,6 @@ try {
 // JWT token generator
 jwt = require('jsonwebtoken');
 
-// Base64 URL codec library
-const base64url = require('base64url');
-
 var app = express();
 const session = require('express-session');
 
