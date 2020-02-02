@@ -30,24 +30,36 @@ app.get('/', function (request, response) {
   response.send('Hello World!');
 });
 
-app.get('/me', function (request, response) {
-  console.log("Display user information");
+// Set up the /me route middleware to authenticate a user via bearer token
+app.use('/me', function (request, response, next) {
 
   // Attach authorization header with bearer token
-  response.append('Authorization', 'Bearer: ' + request.session.jwt);
+  bearerToken = request.get('Authorization').split(' ')[1];
 
-  const verifyUserJWT = jwt.verify(request.session.jwt, "secret");
+  const verifyUserJWT = jwt.verify(bearerToken, "secret");
 
   if(verifyUserJWT) {
 
+    // request.append('req.user', jwt.decode(request.session.jwt));
+    request.user = jwt.decode(request.session.jwt);
+
     response.send({
       'message': 'Successfully verified user token!',
-      'req.user': jwt.decode(request.session.jwt)
+      'user': request.user
     });
   } else {
       response.send("User authentication token could not be verified. Please sign in again.");
   }
+
+  next();
 });
+
+// response.append('Authorization', 'Bearer: ' + request.session.jwt);
+// app.get('/me', function (request, response) {
+  // console.log("Display user information");
+
+
+//});
 
 app.post('/sign-up', function (request, response) {
   var newUser = {
